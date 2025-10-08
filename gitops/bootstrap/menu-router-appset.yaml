@@ -5,19 +5,14 @@ metadata:
   namespace: openshift-gitops
 spec:
   goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
-
   generators:
     - matrix:
         generators:
-          # Read menu selection from Git
           - git:
               repoURL: https://github.com/ckavili/sno-ai.git
               revision: main
               files:
-                - path: gitops/menu/config.yaml
-
-          # Define all menu options
+                - path: gitops/menu/config.yaml   # exposes {{selectedMenu}}, {{git.repoURL}}, {{git.branch}}
           - list:
               elements:
                 - menu: "1"
@@ -32,27 +27,22 @@ spec:
                 - menu: "4"
                   path: gitops/menu-options/option-4
                   name: custom-config
-
-        # Only generate Application for the selected menu item
+        # Post-filter so only the selected menu produces an Application
         selector:
-          matchExpressions:
-            - key: menu
-              operator: In
-              values: ["{{.selectedMenu}}"]
-
+          matchLabels:
+            menu: '{{selectedMenu}}'
   template:
     metadata:
-      name: 'snoai-{{.name}}'
+      name: 'snoai-{{name}}'
       labels:
-        snoai-menu-option: '{{.menu}}'
-        app.kubernetes.io/name: sno-ai
-        app.kubernetes.io/part-of: snoai-platform
+        snoai-menu-option: '{{menu}}'
+        menu: '{{menu}}'
     spec:
       project: default
       source:
-        repoURL: '{{.git.repoURL}}'
-        targetRevision: '{{.git.branch}}'
-        path: '{{.path}}'
+        repoURL: '{{git.repoURL}}'
+        targetRevision: '{{git.branch}}'
+        path: '{{path}}'
       destination:
         server: https://kubernetes.default.svc
         namespace: redhat-ods-operator
@@ -62,8 +52,17 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true
       ignoreDifferences:
         - group: "*"
           kind: "*"
           managedFieldsManagers:
             - kube-controller-manager
+  strategy:
+    type: RollingSync
+    rollingSync:
+      steps:
+        - matchExpressions:
+            - key: snoai-menu-option
+              operator: In
+              values: ['{{selectedMenu}}']
