@@ -4,63 +4,66 @@ metadata:
   name: snoai-menu-router
   namespace: openshift-gitops
 spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+
   generators:
-    # Use List generator to map menu items to ArgoCD apps
-    - list:
-        elements:
-          - menu: "1"
-            path: "gitops/menu-options/option-1"
-            name: "full-rhoai"
-          - menu: "2"
-            path: "gitops/menu-options/option-2"
-            name: "model-serving-granite"
-          - menu: "3"
-            path: "gitops/menu-options/option-3"
-            name: "llm-serving-llamascout"
-          - menu: "4"
-            path: "gitops/menu-options/option-4"
-            name: "custom-config"
+    - matrix:
+        generators:
+          # Read menu selection from Git
+          - git:
+              repoURL: https://github.com/ckavili/sno-ai.git
+              revision: main
+              files:
+                - path: gitops/menu/config.yaml
+
+          # Define all menu options
+          - list:
+              elements:
+                - menu: "1"
+                  path: gitops/menu-options/option-1
+                  name: full-rhoai
+                - menu: "2"
+                  path: gitops/menu-options/option-2
+                  name: model-serving-granite
+                - menu: "3"
+                  path: gitops/menu-options/option-3
+                  name: llm-serving-llamascout
+                - menu: "4"
+                  path: gitops/menu-options/option-4
+                  name: custom-config
+
+        # Only generate Application for the selected menu item
+        selector:
+          matchExpressions:
+            - key: menu
+              operator: In
+              values: ["{{.selectedMenu}}"]
 
   template:
     metadata:
-      name: 'snoai-{{name}}'
+      name: 'snoai-{{.name}}'
       labels:
-        snoai-menu-option: '{{menu}}'
+        snoai-menu-option: '{{.menu}}'
+        app.kubernetes.io/name: sno-ai
+        app.kubernetes.io/part-of: snoai-platform
     spec:
       project: default
       source:
-        repoURL: '{{configMap.snoai-menu-config.GITOPS_REPO}}'
-        targetRevision: '{{configMap.snoai-menu-config.GITOPS_BRANCH}}'
-        path: '{{path}}'
+        repoURL: '{{.git.repoURL}}'
+        targetRevision: '{{.git.branch}}'
+        path: '{{.path}}'
       destination:
         server: https://kubernetes.default.svc
-        namespace: snoai-system
+        namespace: redhat-ods-operator
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
-          - ApplyOutOfSyncOnly=true
-      # Only sync if this menu item is selected
       ignoreDifferences:
         - group: "*"
           kind: "*"
           managedFieldsManagers:
             - kube-controller-manager
-
-  # Sync wave strategy to ensure proper ordering
-  syncPolicy:
-    preserveResourcesOnDeletion: false
-
-  # Template for conditionally syncing based on menu selection
-  # NOTE: ArgoCD ApplicationSet doesn't natively support conditional sync
-  # We'll use a post-sync hook to enable/disable apps based on ConfigMap
-  strategy:
-    type: RollingSync
-    rollingSync:
-      steps:
-        - matchExpressions:
-            - key: snoai-menu-option
-              operator: In
-              values: ['{{configMap.snoai-menu-config.MENU_ITEM}}']

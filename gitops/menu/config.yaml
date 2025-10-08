@@ -1,0 +1,9 @@
+# SNO-AI Menu Selection Configuration
+# Change selectedMenu to switch between RHOAI configurations
+# Valid values: "1", "2", "3", "4"
+
+selectedMenu: "1"
+
+git:
+  repoURL: https://github.com/ckavili/sno-ai.git
+  branch: main
