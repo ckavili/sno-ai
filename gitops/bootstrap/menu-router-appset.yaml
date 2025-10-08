@@ -30,7 +30,7 @@ spec:
                   name: custom-config
   template:
     metadata:
-      name: "snoai-{{ .name }}"
+      name: "snoai-{{ .menu }}"
       labels:
         snoai-menu-option: "{{ .menu }}"
     spec:
