@@ -42,7 +42,7 @@ spec:
       source:
         repoURL: '{{ .git.repoURL }}'
         targetRevision: '{{ .git.branch }}'
-        path: '{{path}}'
+        path: '{{ .path }}'
       destination:
         server: https://kubernetes.default.svc
         namespace: redhat-ods-operator
