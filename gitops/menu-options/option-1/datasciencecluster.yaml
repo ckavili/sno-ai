@@ -8,51 +8,41 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
-  # Full RHOAI deployment - all components enabled
+  # RHOAI deployment - some components enabled
   components:
-    # Dashboard for accessing RHOAI
-    dashboard:
-      managementState: Managed
-
-    # Workbenches for Jupyter notebooks and development
-    workbenches:
-      managementState: Managed
-
-    # Data Science Pipelines for ML workflows
-    datasciencepipelines:
-      managementState: Managed
-
-    # ModelMesh for multi-model serving
-    modelmeshserving:
-      managementState: Managed
-
-    # KServe for advanced model serving
+    codeflare:
+      managementState: Removed
     kserve:
       managementState: Managed
+      nim:
+        managementState: Managed
+      rawDeploymentServiceConfig: Headless
       serving:
+        ingressGateway:
+          certificate:
+            type: OpenshiftDefaultIngress
         managementState: Managed
         name: knative-serving
-
-    # CodeFlare for distributed workloads
-    codeflare:
-      managementState: Managed
-
-    # Ray for distributed computing
-    ray:
-      managementState: Managed
-
-    # Kueue for job queueing
-    kueue:
-      managementState: Managed
-
-    # Training Operator for distributed training
-    trainingoperator:
-      managementState: Managed
-
-    # TrustyAI for model monitoring
-    trustyai:
-      managementState: Managed
-
-    # Model Registry
     modelregistry:
+      managementState: Removed
+      registriesNamespace: rhoai-model-registries
+    feastoperator:
+      managementState: Removed
+    trustyai:
+      managementState: Removed
+    ray:
+      managementState: Removed
+    kueue:
+      managementState: Removed
+    workbenches:
       managementState: Managed
+      workbenchNamespace: rhods-notebooks
+    dashboard:
+      managementState: Managed
+    modelmeshserving:
+      managementState: Removed
+    llamastackoperator: {}
+    datasciencepipelines:
+      managementState: Managed
+    trainingoperator:
+      managementState: Removed

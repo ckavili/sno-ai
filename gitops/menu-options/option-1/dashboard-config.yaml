@@ -1,44 +1,44 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: odh-dashboard-config
-  namespace: redhat-ods-applications
-  labels:
-    snoai-menu-option: "1"
-  annotations:
-    argocd.argoproj.io/sync-wave: "3"
-data:
-  # Dashboard customization
-  dashboardConfig: |
-    {
-      "disableInfo": false,
-      "disableSupport": false,
-      "disableClusterManager": false,
-      "disableTracking": false,
-      "disableBYONImageStream": false,
-      "disableISVBadges": false,
-      "disableAppLauncher": false,
-      "disableUserManagement": false,
-      "disableProjects": false,
-      "disableModelServing": false,
-      "disableProjectSharing": false,
-      "disablePipelines": false,
-      "disableModelMesh": false,
-      "disableAcceleratorProfiles": false,
-      "disablePerformanceMetrics": false,
-      "disableKServe": false,
-      "disableModelRegistry": false,
-      "disableDistributedWorkloads": false
-    }
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: odh-dashboard-config
+#   namespace: redhat-ods-applications
+#   labels:
+#     snoai-menu-option: "1"
+#   annotations:
+#     argocd.argoproj.io/sync-wave: "3"
+# data:
+#   # Dashboard customization
+#   dashboardConfig: |
+#     {
+#       "disableInfo": false,
+#       "disableSupport": false,
+#       "disableClusterManager": false,
+#       "disableTracking": false,
+#       "disableBYONImageStream": false,
+#       "disableISVBadges": false,
+#       "disableAppLauncher": false,
+#       "disableUserManagement": false,
+#       "disableProjects": false,
+#       "disableModelServing": false,
+#       "disableProjectSharing": false,
+#       "disablePipelines": false,
+#       "disableModelMesh": false,
+#       "disableAcceleratorProfiles": false,
+#       "disablePerformanceMetrics": false,
+#       "disableKServe": false,
+#       "disableModelRegistry": false,
+#       "disableDistributedWorkloads": false
+#     }
 
-  # Notebook images configuration
-  notebookController: |
-    {
-      "notebookNamespace": "rhods-notebooks",
-      "notebookTolerationSettings": {
-        "enabled": true,
-        "key": "NotebooksOnly"
-      },
-      "pvcSize": "20Gi",
-      "storageClassName": "gp3-csi"
-    }
+#   # Notebook images configuration
+#   notebookController: |
+#     {
+#       "notebookNamespace": "rhods-notebooks",
+#       "notebookTolerationSettings": {
+#         "enabled": true,
+#         "key": "NotebooksOnly"
+#       },
+#       "pvcSize": "20Gi",
+#       "storageClassName": "gp3-csi"
+#     }

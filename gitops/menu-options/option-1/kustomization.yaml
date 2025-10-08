@@ -8,7 +8,7 @@ metadata:
 
 resources:
   - datasciencecluster.yaml
-  - dashboard-config.yaml
+  # - dashboard-config.yaml
 
 namespace: redhat-ods-operator
 
