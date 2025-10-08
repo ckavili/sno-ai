@@ -6,13 +6,14 @@ metadata:
 spec:
   goTemplate: true
   generators:
-    - matrix:
+    - merge:
+        mergeKeys: ["menu"]          # join on 'menu'
         generators:
           - git:
               repoURL: https://github.com/ckavili/sno-ai.git
               revision: main
               files:
-                - path: gitops/menu/config.yaml   # exposes {{selectedMenu}}, {{git.repoURL}}, {{git.branch}}
+                - path: gitops/menu/config.yaml   # e.g. { menu: "2", git: { repoURL: "...", branch: "main" } }
           - list:
               elements:
                 - menu: "1"
@@ -27,42 +28,17 @@ spec:
                 - menu: "4"
                   appPath: gitops/menu-options/option-4
                   name: custom-config
-        # Post-filter so only the selected menu produces an Application
-        selector:
-          matchLabels:
-            menu: '{{ .selectedMenu }}'
   template:
     metadata:
-      name: 'snoai-{{ .menu }}'
+      name: "snoai-{{ .name }}"
       labels:
-        snoai-menu-option: '{{ .menu }}'
-        menu: '{{ .menu }}'
+        snoai-menu-option: "{{ .menu }}"
     spec:
       project: default
       source:
-        repoURL: '{{ .git.repoURL }}'
-        targetRevision: '{{ .git.branch }}'
-        path: '{{ .appPath }}'
+        repoURL: "{{ .git.repoURL }}"
+        targetRevision: "{{ .git.branch }}"
+        path: "{{ .appPath }}"
       destination:
         server: https://kubernetes.default.svc
         namespace: redhat-ods-operator
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - CreateNamespace=true
-          - ApplyOutOfSyncOnly=true
-      ignoreDifferences:
-        - group: "*"
-          kind: "*"
-          managedFieldsManagers:
-            - kube-controller-manager
-  strategy:
-    type: RollingSync
-    rollingSync:
-      steps:
-        - matchExpressions:
-            - key: snoai-menu-option
-              operator: In
-              values: ['{{ .selectedMenu }}']
