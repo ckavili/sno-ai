@@ -16,16 +16,16 @@ spec:
           - list:
               elements:
                 - menu: "1"
-                  path: gitops/menu-options/option-1
+                  appPath: gitops/menu-options/option-1
                   name: full-rhoai
                 - menu: "2"
-                  path: gitops/menu-options/option-2
+                  appPath: gitops/menu-options/option-2
                   name: model-serving-granite
                 - menu: "3"
-                  path: gitops/menu-options/option-3
+                  appPath: gitops/menu-options/option-3
                   name: llm-serving-llamascout
                 - menu: "4"
-                  path: gitops/menu-options/option-4
+                  appPath: gitops/menu-options/option-4
                   name: custom-config
         # Post-filter so only the selected menu produces an Application
         selector:
@@ -42,7 +42,7 @@ spec:
       source:
         repoURL: '{{ .git.repoURL }}'
         targetRevision: '{{ .git.branch }}'
-        path: '{{ .path }}'
+        path: '{{ .appPath }}'
       destination:
         server: https://kubernetes.default.svc
         namespace: redhat-ods-operator
