@@ -15,7 +15,7 @@ data:
   MENU_ITEM: "1"
 
   # GitOps repository configuration
-  GITOPS_REPO: "https://github.com/your-org/sno-ai-gitops"
+  GITOPS_REPO: "https://github.com/ckavili/sno-ai.git"
   GITOPS_BRANCH: "main"
 
   # Optional: Custom repository for user configurations
