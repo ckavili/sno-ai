@@ -1,0 +1,124 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: llamascout-20b
+  namespace: snoai-system
+  labels:
+    snoai-menu-option: "3"
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    serving.kserve.io/deploymentMode: RawDeployment
+spec:
+  predictor:
+    minReplicas: 1
+    maxReplicas: 1
+
+    containers:
+      - name: vllm
+        image: quay.io/modh/vllm:latest
+        command:
+          - python
+          - -m
+          - vllm.entrypoints.openai.api_server
+        args:
+          - --model=/mnt/models/llamascout-20b
+          - --port=8080
+          - --tensor-parallel-size=1
+          - --dtype=half
+          - --max-model-len=4096
+          - --gpu-memory-utilization=0.90
+          - --trust-remote-code
+
+        resources:
+          requests:
+            cpu: "8"
+            memory: 32Gi
+            nvidia.com/gpu: "1"
+          limits:
+            cpu: "16"
+            memory: 64Gi
+            nvidia.com/gpu: "1"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llamascout-model-config
+  namespace: snoai-system
+  labels:
+    snoai-menu-option: "3"
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+data:
+  model-info.yaml: |
+    models:
+      - name: llamascout-20b
+        version: "1.0"
+        description: "LLamaScout 20B - Optimized for general-purpose LLM tasks"
+        framework: "pytorch"
+        runtime: "vllm"
+        parameters: "20B"
+        context_length: 4096
+        gpu_required: true
+        preloaded: true
+        tags:
+          - llm
+          - general-purpose
+          - 20b-params
+          - vllm
+
+  usage-examples.md: |
+    # LLamaScout 20B Usage Examples
+
+    ## OpenAI-Compatible API
+
+    The model is served with an OpenAI-compatible API endpoint.
+
+    ### Chat Completion
+
+    ```bash
+    curl -X POST http://llamascout-20b-predictor.snoai-system.svc.cluster.local:8080/v1/chat/completions \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "llamascout-20b",
+        "messages": [
+          {"role": "system", "content": "You are a helpful assistant."},
+          {"role": "user", "content": "Explain quantum computing in simple terms."}
+        ],
+        "max_tokens": 500,
+        "temperature": 0.7
+      }'
+    ```
+
+    ### Text Completion
+
+    ```bash
+    curl -X POST http://llamascout-20b-predictor.snoai-system.svc.cluster.local:8080/v1/completions \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "llamascout-20b",
+        "prompt": "Once upon a time",
+        "max_tokens": 100,
+        "temperature": 0.8
+      }'
+    ```
+
+    ## Python SDK
+
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        base_url="http://llamascout-20b-predictor.snoai-system.svc.cluster.local:8080/v1",
+        api_key="not-required"
+    )
+
+    response = client.chat.completions.create(
+        model="llamascout-20b",
+        messages=[
+            {"role": "user", "content": "What is machine learning?"}
+        ]
+    )
+
+    print(response.choices[0].message.content)
+    ```

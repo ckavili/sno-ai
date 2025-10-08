@@ -1,0 +1,46 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: granite-7b-instruct
+  namespace: snoai-system
+  labels:
+    snoai-menu-option: "2"
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    serving.kserve.io/deploymentMode: ModelMesh
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: granite
+        version: "1"
+      runtime: granite-ovms-runtime
+      storage:
+        key: granite-models
+        path: granite-7b-instruct
+        parameters:
+          bucket: granite-models
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: granite-model-config
+  namespace: snoai-system
+  labels:
+    snoai-menu-option: "2"
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+data:
+  model-info.yaml: |
+    models:
+      - name: granite-7b-instruct
+        version: "1.0"
+        description: "IBM Granite 7B Instruct - Optimized for code generation"
+        framework: "pytorch"
+        runtime: "openvino"
+        path: "s3://granite-models/granite-7b-instruct"
+        preloaded: true
+        tags:
+          - code-generation
+          - instruct
+          - 7b-params

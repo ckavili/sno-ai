@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: snoai-menu-config
+  namespace: openshift-gitops
+  labels:
+    app.kubernetes.io/name: snoai-menu
+    app.kubernetes.io/part-of: snoai-platform
+data:
+  # Menu option selection (1-4)
+  # 1 = Full RHOAI (v2.25)
+  # 2 = Model Serving Focus (v2.22) with Granite
+  # 3 = LLM Serving Focus (v3.0) with LlamaScout 20B
+  # 4 = Custom configuration
+  MENU_ITEM: "1"
+
+  # GitOps repository configuration
+  GITOPS_REPO: "https://github.com/your-org/sno-ai-gitops"
+  GITOPS_BRANCH: "main"
+
+  # Optional: Custom repository for user configurations
+  CUSTOM_REPO: ""
+  CUSTOM_BRANCH: "main"

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: snoai-system
+  labels:
+    app.kubernetes.io/name: snoai
+    app.kubernetes.io/part-of: snoai-platform

@@ -1,0 +1,49 @@
+apiVersion: datasciencecluster.opendatahub.io/v1
+kind: DataScienceCluster
+metadata:
+  name: default-dsc
+  namespace: redhat-ods-operator
+  labels:
+    snoai-menu-option: "2"
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  # Model Serving Focus - only essential components for model serving
+  components:
+    # Dashboard for accessing model serving UI
+    dashboard:
+      managementState: Managed
+
+    # ModelMesh for serving Granite models
+    modelmeshserving:
+      managementState: Managed
+
+    # Model Registry for tracking models
+    modelregistry:
+      managementState: Managed
+
+    # Minimal workbenches for model testing
+    workbenches:
+      managementState: Managed
+
+    # Disable other components to save resources
+    datasciencepipelines:
+      managementState: Removed
+
+    kserve:
+      managementState: Removed
+
+    codeflare:
+      managementState: Removed
+
+    ray:
+      managementState: Removed
+
+    kueue:
+      managementState: Removed
+
+    trainingoperator:
+      managementState: Removed
+
+    trustyai:
+      managementState: Managed  # Keep for model monitoring

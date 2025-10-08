@@ -1,0 +1,66 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: snoai-menu-router
+  namespace: openshift-gitops
+spec:
+  generators:
+    # Use List generator to map menu items to ArgoCD apps
+    - list:
+        elements:
+          - menu: "1"
+            path: "gitops/menu-options/option-1"
+            name: "full-rhoai"
+          - menu: "2"
+            path: "gitops/menu-options/option-2"
+            name: "model-serving-granite"
+          - menu: "3"
+            path: "gitops/menu-options/option-3"
+            name: "llm-serving-llamascout"
+          - menu: "4"
+            path: "gitops/menu-options/option-4"
+            name: "custom-config"
+
+  template:
+    metadata:
+      name: 'snoai-{{name}}'
+      labels:
+        snoai-menu-option: '{{menu}}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{configMap.snoai-menu-config.GITOPS_REPO}}'
+        targetRevision: '{{configMap.snoai-menu-config.GITOPS_BRANCH}}'
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: snoai-system
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true
+      # Only sync if this menu item is selected
+      ignoreDifferences:
+        - group: "*"
+          kind: "*"
+          managedFieldsManagers:
+            - kube-controller-manager
+
+  # Sync wave strategy to ensure proper ordering
+  syncPolicy:
+    preserveResourcesOnDeletion: false
+
+  # Template for conditionally syncing based on menu selection
+  # NOTE: ArgoCD ApplicationSet doesn't natively support conditional sync
+  # We'll use a post-sync hook to enable/disable apps based on ConfigMap
+  strategy:
+    type: RollingSync
+    rollingSync:
+      steps:
+        - matchExpressions:
+            - key: snoai-menu-option
+              operator: In
+              values: ['{{configMap.snoai-menu-config.MENU_ITEM}}']

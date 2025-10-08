@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: full-rhoai
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+
+resources:
+  - datasciencecluster.yaml
+  - dashboard-config.yaml
+
+namespace: redhat-ods-operator
+
+commonLabels:
+  snoai-menu-option: "1"
+  snoai-config: "full-rhoai"

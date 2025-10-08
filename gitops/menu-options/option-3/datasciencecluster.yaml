@@ -1,0 +1,53 @@
+apiVersion: datasciencecluster.opendatahub.io/v1
+kind: DataScienceCluster
+metadata:
+  name: default-dsc
+  namespace: redhat-ods-operator
+  labels:
+    snoai-menu-option: "3"
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  # LLM Serving Focus - optimized for large language models with vLLM
+  components:
+    # Dashboard for accessing model serving UI
+    dashboard:
+      managementState: Managed
+
+    # KServe for advanced model serving with vLLM
+    kserve:
+      managementState: Managed
+      serving:
+        managementState: Managed
+        name: knative-serving
+
+    # Model Registry for tracking LLM versions
+    modelregistry:
+      managementState: Managed
+
+    # TrustyAI for LLM monitoring
+    trustyai:
+      managementState: Managed
+
+    # Minimal workbenches for LLM testing
+    workbenches:
+      managementState: Managed
+
+    # Disable components not needed for LLM serving
+    modelmeshserving:
+      managementState: Removed
+
+    datasciencepipelines:
+      managementState: Removed
+
+    codeflare:
+      managementState: Removed
+
+    ray:
+      managementState: Removed
+
+    kueue:
+      managementState: Removed
+
+    trainingoperator:
+      managementState: Removed

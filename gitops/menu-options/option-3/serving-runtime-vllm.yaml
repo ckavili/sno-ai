@@ -1,0 +1,107 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  name: vllm-llamascout-runtime
+  namespace: snoai-system
+  labels:
+    snoai-menu-option: "3"
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    opendatahub.io/template-name: vllm-runtime
+    opendatahub.io/template-display-name: "vLLM Runtime for LLamaScout"
+spec:
+  supportedModelFormats:
+    - name: pytorch
+      version: "1"
+      autoSelect: true
+
+  multiModel: false
+
+  containers:
+    - name: vllm
+      image: quay.io/modh/vllm:latest
+      command:
+        - python
+        - -m
+        - vllm.entrypoints.openai.api_server
+      args:
+        - --model=/mnt/models/llamascout-20b
+        - --port=8000
+        - --tensor-parallel-size=1
+        - --dtype=half
+        - --max-model-len=4096
+        - --gpu-memory-utilization=0.90
+        - --trust-remote-code
+        - --served-model-name=llamascout-20b
+
+      env:
+        - name: VLLM_WORKER_MULTIPROC_METHOD
+          value: spawn
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-secret
+              key: token
+              optional: true
+
+      resources:
+        requests:
+          cpu: "8"
+          memory: 32Gi
+          nvidia.com/gpu: "1"
+        limits:
+          cpu: "16"
+          memory: 64Gi
+          nvidia.com/gpu: "1"
+
+      volumeMounts:
+        - name: model-storage
+          mountPath: /mnt/models
+          readOnly: true
+        - name: shm
+          mountPath: /dev/shm
+
+      ports:
+        - containerPort: 8000
+          protocol: TCP
+
+  volumes:
+    - name: model-storage
+      persistentVolumeClaim:
+        claimName: llamascout-models-pvc
+    - name: shm
+      emptyDir:
+        medium: Memory
+        sizeLimit: 2Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: llamascout-models-pvc
+  namespace: snoai-system
+  labels:
+    snoai-menu-option: "3"
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi  # LLamaScout 20B requires substantial storage
+  storageClassName: gp3-csi
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hf-token-secret
+  namespace: snoai-system
+  labels:
+    snoai-menu-option: "3"
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+type: Opaque
+stringData:
+  token: ""  # User should provide their HuggingFace token
