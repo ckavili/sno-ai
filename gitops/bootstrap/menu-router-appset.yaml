@@ -30,7 +30,7 @@ spec:
         # Post-filter so only the selected menu produces an Application
         selector:
           matchLabels:
-            menu: '{{selectedMenu}}'
+            menu: '{{ .selectedMenu }}'
   template:
     metadata:
       name: 'snoai-{{ .menu }}'
@@ -40,8 +40,8 @@ spec:
     spec:
       project: default
       source:
-        repoURL: '{{git.repoURL}}'
-        targetRevision: '{{git.branch}}'
+        repoURL: '{{ .git.repoURL }}'
+        targetRevision: '{{ .git.branch }}'
         path: '{{path}}'
       destination:
         server: https://kubernetes.default.svc
@@ -65,4 +65,4 @@ spec:
         - matchExpressions:
             - key: snoai-menu-option
               operator: In
-              values: ['{{selectedMenu}}']
+              values: ['{{ .selectedMenu }}']
